@@ -416,24 +416,24 @@ CGFloat const SLKAutoCompletionViewDefaultHeight = 140.0;
 {
     // No need to adjust if the edge isn't available
     if ((self.edgesForExtendedLayout & UIRectEdgeTop) == 0) {
-        return 0.0;
+        return 0.0 + self.additionalTopInset;
     }
     
     CGFloat topBarsHeight = CGRectGetHeight(self.navigationController.navigationBar.frame);
     
     if (SLK_IS_IPHONE && SLK_IS_LANDSCAPE && SLK_IS_IOS8_AND_HIGHER) {
-        return topBarsHeight;
+        return topBarsHeight + self.additionalTopInset;
     }
     if (SLK_IS_IPAD && self.modalPresentationStyle == UIModalPresentationFormSheet) {
-        return topBarsHeight;
+        return topBarsHeight + self.additionalTopInset;
     }
     if (self.isPresentedInPopover) {
-        return topBarsHeight;
+        return topBarsHeight + self.additionalTopInset;
     }
     
     topBarsHeight += CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
     
-    return topBarsHeight;
+    return topBarsHeight + self.additionalTopInset;
 }
 
 - (NSString *)slk_appropriateKeyboardNotificationName:(NSNotification *)notification
