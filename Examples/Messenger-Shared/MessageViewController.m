@@ -322,6 +322,10 @@ static NSString *AutoCompletionCellIdentifier = @"AutoCompletionCell";
 
 - (BOOL)forceTextInputbarAdjustmentForResponder:(UIResponder *)responder
 {
+    if ([responder isKindOfClass:[UIAlertController class]]) {
+        return YES;
+    }
+    
     // On iOS 9, returning YES helps keeping the input view visible when the keyboard if presented from another app when using multi-tasking on iPad.
     return SLK_IS_IPAD;
 }
@@ -452,11 +456,9 @@ static NSString *AutoCompletionCellIdentifier = @"AutoCompletionCell";
 #endif
 }
 
-- (BOOL)canShowAutoCompletion
+- (void)didChangeAutoCompletionPrefix:(NSString *)prefix andWord:(NSString *)word
 {
     NSArray *array = nil;
-    NSString *prefix = self.foundPrefix;
-    NSString *word = self.foundWord;
     
     self.searchResult = nil;
     
@@ -481,7 +483,9 @@ static NSString *AutoCompletionCellIdentifier = @"AutoCompletionCell";
     
     self.searchResult = [[NSMutableArray alloc] initWithArray:array];
     
-    return self.searchResult.count > 0;
+    BOOL show = (self.searchResult.count > 0);
+    
+    [self showAutoCompletionView:show];
 }
 
 - (CGFloat)heightForAutoCompletionView

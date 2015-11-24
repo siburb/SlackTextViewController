@@ -3,9 +3,9 @@
 [![Build Status](https://img.shields.io/travis/slackhq/SlackTextViewController.svg?style=flat-square)](https://travis-ci.org/slackhq/SlackTextViewController)
 [![Coverage Status](https://img.shields.io/coveralls/slackhq/SlackTextViewController/master.svg?style=flat-square)](https://coveralls.io/r/slackhq/SlackTextViewController)
 
-[![Pod Version](http://img.shields.io/cocoapods/v/SlackTextViewController.svg?style=flat-square)](https://cocoadocs.org/docsets/SlackTextViewController)
+[![Pod Version](https://img.shields.io/cocoapods/v/SlackTextViewController.svg?style=flat-square)](https://cocoadocs.org/docsets/SlackTextViewController)
 [![Carthage compatible](https://img.shields.io/badge/carthage-compatible-F5B369.svg?style=flat-square)](https://github.com/Carthage/Carthage)
-[![License](http://img.shields.io/badge/license-apache%202.0-blue.svg?style=flat-square)](http://opensource.org/licenses/Apache2.0)
+[![License](https://img.shields.io/badge/license-apache%202.0-blue.svg?style=flat-square)](http://opensource.org/licenses/Apache2.0)
 
 
 A drop-in UIViewController subclass with a growing text input view and other useful messaging features. Meant to be a replacement for UITableViewController & UICollectionViewController.
@@ -35,6 +35,7 @@ This library is used in Slack's iOS app. It was built to fit our needs, but is f
 - [Inverted Mode](https://github.com/slackhq/SlackTextViewController#inverted-mode) for displaying cells upside-down (using CATransform) -- a necessary hack for some messaging apps. `YES` by default, so beware, your entire cells might be flipped!
 - Tap Gesture for dismissing the keyboard
 - [Panning Gesture](https://github.com/slackhq/SlackTextViewController#panning-gesture) for sliding down/up the keyboard
+- [Hiddable TextInputbar](https://github.com/slackhq/SlackTextViewController#hiddable-textinputbar)
 - [Dynamic Type](https://github.com/slackhq/SlackTextViewController#dynamic-type) for adjusting automatically the text input bar height based on the font size.
 - Bouncy Animations
 
@@ -52,7 +53,7 @@ This library is used in Slack's iOS app. It was built to fit our needs, but is f
 
 ## Installation
 
-###### With [Cocoa Pods](http://cocoapods.org):
+###### With [Cocoa Pods](https://cocoapods.org/):
 ```ruby
 pod 'SlackTextViewController'
 ```
@@ -139,14 +140,11 @@ You must first register all the prefixes you'd like to support for autocompletio
 #### 2. Processing
 Every time a new character is inserted in the text view, the nearest word to the caret will be processed and verified if it contains any of the registered prefixes.
 
-Once the prefix has been detected, `-canShowAutoCompletion` will be called. This is the perfect place to populate your data source, and return a BOOL if the autocompletion view should actually be shown. So you must override it in your subclass, to be able to perform additional tasks. Default returns NO.
+Once the prefix has been detected, `-didChangeAutoCompletionPrefix:andWord:` will be called. This is the perfect place to populate your data source and show/hide the autocompletion view. So you must override it in your subclass, to be able to perform additional tasks. Default returns NO.
 
 ````objc
-- (BOOL)canShowAutoCompletion
+- (void)didChangeAutoCompletionPrefix:(NSString *)prefix andWord:(NSString *)word
 {
-    NSString *prefix = self.foundPrefix;
-    NSString *word = self.foundWord;
-    
     self.searchResult = [[NSArray alloc] initWithArray:self.channels];
     
     if ([prefix isEqualToString:@"#"])
@@ -160,13 +158,15 @@ Once the prefix has been detected, `-canShowAutoCompletion` will be called. This
         self.searchResult = [self.searchResult sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     }
     
-    return self.searchResult.count > 0;
+    BOOL show = (self.searchResult.count > 0);
+    
+    [self showAutoCompletionView:show];
 }
 ````
 
 The autocompletion view is a `UITableView` instance, so you will need to use `UITableViewDataSource` to populate its cells. You have complete freedom for customizing the cells.
 
-You don't need to call `-reloadData` yourself, since it will be called automatically if you return `YES` in `-canShowAutoCompletion` method.
+You don't need to call `-reloadData` yourself, since it will be invoked automatically right after calling the `-showAutoCompletionView` method.
 
 #### 3. Layout
 
@@ -246,6 +246,14 @@ You can also dismiss it by calling `[self.typingIndicatorView dismissIndicator];
 ###Panning Gesture
 
 Dismissing the keyboard with a panning gesture is enabled by default with the `keyboardPanningEnabled` property. You can always disable it if you'd like. You can extend the `verticalPanGesture` behaviors with the `UIGestureRecognizerDelegate` methods.
+
+###Hiddable TextInputbar
+
+Sometimes you may need to hide the text input bar.
+Very similar to `UINavigationViewController`'s API, simple do:
+```objc
+[self setTextInputbarHidden:YES animated:YES];
+```
 
 ###Shake Gesture
 
@@ -332,4 +340,4 @@ To install them, open up your terminal and type:
 sh ./SlackTextViewController/File\ Templates/install.sh
 ```
 
-These templates are also available in [Alcatraz](https://github.com/supermarin/Alcatraz).
+These templates are also available in [Alcatraz](https://github.com/alcatraz/Alcatraz).
